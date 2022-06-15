@@ -2,6 +2,7 @@
 
 module Tester where
 
+import Control.Applicative
 import Data.List (isInfixOf)
 import qualified Data.Map as Map
 import GHC.IO.Handle (hGetContents)
@@ -12,6 +13,8 @@ import System.Process
   , std_out
   , waitForProcess
   )
+import qualified Text.Parsec as Parsec
+import Text.Parsec.String (Parser)
 import Text.Printf (printf)
 
 type Condition = (String -> Bool)
@@ -38,15 +41,16 @@ type Script = [Test]
 instance Show Test where
   show (Test name cmd _) = printf "name=%s, cmd=%s" name cmd
 
-condCons :: Map.Map String ConditionConstructor
+condCons :: Parser ConditionConstructor
 condCons =
-  Map.fromList
-    [ ( "contain"
-      , \case
-          [] -> Left "Usage: contains(string)"
-          (x:_) -> Right (isInfixOf x))
-    , ("be_empty", const $ Right null)
-    ]
+  (\case
+     [x] -> Right (isInfixOf x)
+     _ -> Left $ printf "Usage: contains(<value to be contained>)") <$
+  Parsec.string "contain" <|>
+  (\case
+     [] -> Right (== "")
+     _ -> Left "Usage: be_empty()") <$
+  Parsec.string "be_empty"
 
 runTest :: Test -> IO TestResult
 runTest t@(Test _ cmd conds) = do
