@@ -44,14 +44,18 @@ instance Show TestResult where
 
 condCons :: Parser ConditionConstructor
 condCons =
-  (\case
-     [x] -> Right (isInfixOf x)
-     _ -> Left $ printf "Usage: contains(<value to be contained>)") <$
-  Parsec.string "contain" <|>
-  (\case
-     [] -> Right (== "")
-     _ -> Left "Usage: be_empty()") <$
-  Parsec.string "be_empty"
+  Parsec.choice $
+  map
+    (\(f, n) -> f <$ Parsec.string n)
+    [ ( \case
+          [x] -> Right (isInfixOf x)
+          _ -> Left $ printf "Usage: contains(<value to be contained>)"
+      , "contains")
+    , ( \case
+          [] -> Right (== "")
+          _ -> Left "Usage: be_empty()"
+      , "be_empty")
+    ]
 
 runTest :: Test -> IO TestResult
 runTest t@(Test _ cmd conds) = do
