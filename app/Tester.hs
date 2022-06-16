@@ -38,9 +38,9 @@ data TestResult =
 type Script = [Test]
 
 instance Show TestResult where
-  show (TestResult (Test n _ _) output True) = printf "Test %s passed" n
+  show (TestResult (Test n _ _) output True) = printf "Test '%s' passed" n
   show (TestResult (Test n _ _) output False) =
-    printf "Test %s passed failed with output %s" n output
+    printf "Test '%s' failed with output '%s'" n output
 
 condCons :: Parser ConditionConstructor
 condCons =
