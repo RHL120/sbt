@@ -16,7 +16,9 @@ stringLiteralP =
 argumentsP :: Parser [String]
 argumentsP =
   Parsec.char '(' *> Parsec.spaces *>
-  Parsec.sepBy stringLiteralP (Parsec.char ',') <*
+  Parsec.sepBy
+    stringLiteralP
+    (Parsec.spaces *> Parsec.char ',' <* Parsec.spaces) <*
   Parsec.spaces <*
   Parsec.char ')'
 
@@ -30,17 +32,25 @@ condtionP = do
 
 testBodyP :: Parser [Tester.Condition]
 testBodyP =
-  Parsec.char '{' *> Parsec.spaces *>
-  Parsec.sepBy condtionP (Parsec.string "and") <*
+  Parsec.char '{' *> Parsec.spaces *> Parsec.spaces *>
+  Parsec.sepBy
+    condtionP
+    (some (Parsec.oneOf " ") *> Parsec.string "and" <* some (Parsec.oneOf " ")) <*
   Parsec.spaces <*
   Parsec.char '}'
 
 testP :: Parser Tester.Test
 testP = do
   args <- argumentsP
+  Parsec.spaces
+  Parsec.string "should"
+  Parsec.spaces
   if length args /= 2
     then fail "Usage: (name, cmd)"
     else Tester.Test (head args) (last args) <$> testBodyP
 
-parseScript :: String -> Tester.Script
-parseScript = error "Todo: implement parseScript"
+parseScript :: String -> Either Parsec.ParseError Tester.Script
+parseScript =
+  Parsec.parse
+    (some (Parsec.spaces *> testP <* Parsec.spaces))
+    "Failed to parse script"

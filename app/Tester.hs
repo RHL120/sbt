@@ -34,12 +34,13 @@ data TestResult =
     , testedOutput :: String
     , result :: Bool
     }
-  deriving (Show)
 
 type Script = [Test]
 
-instance Show Test where
-  show (Test name cmd _) = printf "name=%s, cmd=%s" name cmd
+instance Show TestResult where
+  show (TestResult (Test n _ _) output True) = printf "Test %s passed" n
+  show (TestResult (Test n _ _) output False) =
+    printf "Test %s passed failed with output %s" n output
 
 condCons :: Parser ConditionConstructor
 condCons =
@@ -57,7 +58,7 @@ runTest t@(Test _ cmd conds) = do
   (_, Just out, _, handle) <- createProcess (shell cmd) {std_out = CreatePipe}
   waitForProcess handle
   output <- hGetContents out
-  return (TestResult t "" (all (\f -> f output) conds))
+  return (TestResult t output (all (\f -> f output) conds))
 
 runScript :: Script -> IO [TestResult]
 runScript = traverse runTest
