@@ -5,10 +5,13 @@ import Control.Monad (fail)
 import qualified Tester
 import qualified Text.Parsec as Parsec
 import Text.Parsec.String (Parser)
-import Text.Parsec.Token (GenTokenParser(stringLiteral))
 
 stringLiteralP :: Parser String
-stringLiteralP = undefined
+stringLiteralP =
+  Parsec.char '"' *> many (Parsec.try ('"' <$ Parsec.string "\\\"") <|> ec) <*
+  Parsec.char '"'
+  where
+    ec = Parsec.noneOf "\"" :: Parser Char
 
 argumentsP :: Parser [String]
 argumentsP =
