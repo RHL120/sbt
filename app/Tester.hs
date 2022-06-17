@@ -3,6 +3,7 @@
 module Tester where
 
 import Control.Applicative
+import Data.Char (isDigit)
 import Data.List (isInfixOf)
 import qualified Data.Map as Map
 import GHC.IO.Handle (hGetContents)
@@ -55,6 +56,13 @@ condCons =
           [] -> Right (== "")
           _ -> Left "Usage: be_empty()"
       , "be_empty")
+    , ( \case
+          [x] ->
+            if not $ all isDigit x
+              then Left "expected length must be an int"
+              else Right (== read x)
+          _ -> Left "Usage: have_len(<expected length>)"
+      , "have_len")
     ]
 
 runTest :: Test -> IO TestResult
