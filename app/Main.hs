@@ -14,7 +14,7 @@ getScriptPath = do
   if length args /= 1
     then do
       pname <- getProgName
-      putStrLn $ "Usage: " ++ pname ++ "<script path>"
+      putStrLn $ "Usage: " ++ pname ++ " <script path>"
       exitFailure
     else return $ head args
 
@@ -23,7 +23,7 @@ main = do
   path <- getScriptPath
   script <- parseScript <$> (openFile path ReadMode >>= hGetContents)
   case script of
-    Left e -> putStrLn ("Failed to parse script error" ++ show e)
+    Left e -> putStrLn ("Failed to parse script error " ++ show e)
     Right scr -> do
       res <- runScript scr
       () <$ traverse print res
