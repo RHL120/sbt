@@ -4,14 +4,13 @@ module Script
   ( parseScript
   ) where
 
-import Control.Monad (fail)
-import qualified Tester
-
 import Control.Applicative
+import Control.Monad (fail)
 import Data.Char (isDigit)
 import Data.List (isInfixOf)
 import qualified Data.Map as Map
 import GHC.IO.Handle (hGetContents)
+import GHC.IO.Handle.Internals (withAllHandles__)
 import System.Process
   ( StdStream(CreatePipe)
   , createProcess
@@ -48,6 +47,10 @@ instance Show TestResult where
   show (TestResult (Test n _ _) output False) =
     printf "Test '%s' failed with output '%s'" n output
 
+-- There is a way to simplify this. In map we can add a wrapper to the constructor
+-- which checks the length of the arguments for us but on the other hand we will
+-- have to use !! alot or we can use do something like this \[x] -> but then
+-- we will have to ignore possibel warnings saying that \[] -> is not defined
 condCons :: Parser ConditionConstructor
 condCons =
   Parsec.choice $
