@@ -84,7 +84,7 @@ condCons =
       , "not")
     , ( \case
           [arg] -> Right (isSuffixOf arg)
-          _ -> Left "Usage: has_suffix(<suffix>)"
+          _ -> Left "Usage: have_suffix(<suffix>)"
       , "have_suffix")
     , ( \case
           [arg] -> Right (isPrefixOf arg)
