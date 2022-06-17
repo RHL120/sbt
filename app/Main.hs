@@ -1,10 +1,9 @@
 module Main where
 
-import Script (parseScript)
+import Script (parseScript, runScript)
 import System.Environment (getArgs, getProgName)
 import System.Exit (exitFailure)
 import System.IO
-import Tester (runScript, runTest)
 import Text.Printf (printf)
 
 getScriptPath :: IO String

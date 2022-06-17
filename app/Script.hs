@@ -2,6 +2,7 @@
 
 module Script
   ( parseScript
+  , runScript
   ) where
 
 import Control.Applicative
