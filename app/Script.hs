@@ -1,4 +1,6 @@
-module Script where
+module Script
+  ( parseScript
+  ) where
 
 import Control.Applicative
 import Control.Monad (fail)
