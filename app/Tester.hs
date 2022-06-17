@@ -50,7 +50,7 @@ condCons =
     [ ( \case
           [x] -> Right (isInfixOf x)
           _ -> Left $ printf "Usage: contains(<value to be contained>)"
-      , "contains")
+      , "contain")
     , ( \case
           [] -> Right (== "")
           _ -> Left "Usage: be_empty()"
