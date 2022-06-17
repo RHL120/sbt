@@ -35,10 +35,8 @@ testBodyP :: Parser [Tester.Condition]
 testBodyP =
   Parsec.between
     (Parsec.char '{' <* Parsec.spaces)
-    (Parsec.spaces *> Parsec.char '}')
-    (Parsec.sepBy
-       condtionP
-       (Parsec.spaces *> Parsec.string "and" <* Parsec.spaces))
+    (Parsec.char '}')
+    (many (condtionP <* Parsec.spaces))
 
 testP :: Parser Tester.Test
 testP = do
