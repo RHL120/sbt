@@ -8,7 +8,7 @@ module Script
 import Control.Applicative
 import Control.Monad (fail)
 import Data.Char (isDigit)
-import Data.List (isInfixOf)
+import Data.List (isInfixOf, isPrefixOf, isSuffixOf)
 import qualified Data.Map as Map
 import GHC.IO.Handle (hGetContents)
 import GHC.IO.Handle.Internals (withAllHandles__)
@@ -82,6 +82,14 @@ condCons =
             return (not . h)
           _ -> Left "Usage: not(condition)"
       , "not")
+    , ( \case
+          [arg] -> Right (isSuffixOf arg)
+          _ -> Left "Usage: has_suffix(<suffix>)"
+      , "have_suffix")
+    , ( \case
+          [arg] -> Right (isPrefixOf arg)
+          _ -> Left "Usage: have_prefix(<prefix>)"
+      , "have_prefix")
     ]
 
 runTest :: Test -> IO TestResult
