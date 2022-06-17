@@ -90,6 +90,10 @@ condCons =
           [arg] -> Right (isPrefixOf arg)
           _ -> Left "Usage: have_prefix(<prefix>)"
       , "have_prefix")
+    , ( \case
+          [arg] -> Right (arg ==)
+          _ -> Left "Usage: be(<str to compare to>)"
+      , "be")
     ]
 
 runTest :: Test -> IO TestResult
