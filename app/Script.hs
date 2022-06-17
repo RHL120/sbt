@@ -1,12 +1,94 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Script
   ( parseScript
   ) where
 
-import Control.Applicative
 import Control.Monad (fail)
 import qualified Tester
+
+import Control.Applicative
+import Data.Char (isDigit)
+import Data.List (isInfixOf)
+import qualified Data.Map as Map
+import GHC.IO.Handle (hGetContents)
+import System.Process
+  ( StdStream(CreatePipe)
+  , createProcess
+  , shell
+  , std_out
+  , waitForProcess
+  )
 import qualified Text.Parsec as Parsec
 import Text.Parsec.String (Parser)
+import Text.Printf (printf)
+
+type Condition = (String -> Bool)
+
+type ConditionConstructor = [String] -> Either String Condition
+
+data Test =
+  Test
+    { testName :: String
+    , testCmd :: String
+    , testConditions :: [Condition]
+    }
+
+data TestResult =
+  TestResult
+    { testedTest :: Test
+    , testedOutput :: String
+    , result :: Bool
+    }
+
+type Script = [Test]
+
+instance Show TestResult where
+  show (TestResult (Test n _ _) output True) = printf "Test '%s' passed" n
+  show (TestResult (Test n _ _) output False) =
+    printf "Test '%s' failed with output '%s'" n output
+
+condCons :: Parser ConditionConstructor
+condCons =
+  Parsec.choice $
+  map
+    (\(f, n) -> f <$ Parsec.string n)
+    [ ( \case
+          [x] -> Right (isInfixOf x)
+          _ -> Left $ printf "Usage: contains(<value to be contained>)"
+      , "contain")
+    , ( \case
+          [] -> Right (== "")
+          _ -> Left "Usage: be_empty()"
+      , "be_empty")
+    , ( \case
+          [x] ->
+            if not $ all isDigit x
+              then Left "expected length must be an int"
+              else Right (== read x)
+          _ -> Left "Usage: have_len(<expected length>)"
+      , "have_len")
+    , ( \case
+          [arg] -> do
+            h <-
+              either
+                (Left . show)
+                Right
+                (Parsec.parse condtionP "failed to parse condition" arg)
+            return (not . h)
+          _ -> Left "Usage: not(condition)"
+      , "not")
+    ]
+
+runTest :: Test -> IO TestResult
+runTest t@(Test _ cmd conds) = do
+  (_, Just out, _, handle) <- createProcess (shell cmd) {std_out = CreatePipe}
+  waitForProcess handle
+  output <- hGetContents out
+  return (TestResult t output (all (\f -> f output) conds))
+
+runScript :: Script -> IO [TestResult]
+runScript = traverse runTest
 
 stringLiteralP :: Parser String
 stringLiteralP =
@@ -24,23 +106,23 @@ argumentsP =
   Parsec.spaces <*
   Parsec.char ')'
 
-condtionP :: Parser Tester.Condition
+condtionP :: Parser Condition
 condtionP = do
-  cc <- Tester.condCons
+  cc <- condCons
   Parsec.spaces
   args <- argumentsP
   case cc args of
     Left e -> fail ("error: " ++ e)
     Right f -> return f
 
-testBodyP :: Parser [Tester.Condition]
+testBodyP :: Parser [Condition]
 testBodyP =
   Parsec.between
     (Parsec.char '{' <* Parsec.spaces)
     (Parsec.char '}')
     (many (condtionP <* Parsec.spaces))
 
-testP :: Parser Tester.Test
+testP :: Parser Test
 testP = do
   args <- argumentsP
   Parsec.spaces
@@ -48,9 +130,9 @@ testP = do
   Parsec.spaces
   if length args /= 2
     then fail "Usage: (name, cmd)"
-    else Tester.Test (head args) (last args) <$> testBodyP
+    else Test (head args) (last args) <$> testBodyP
 
-parseScript :: String -> Either Parsec.ParseError Tester.Script
+parseScript :: String -> Either Parsec.ParseError Script
 parseScript =
   Parsec.parse
     (some (Parsec.spaces *> testP <* Parsec.spaces))

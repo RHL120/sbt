@@ -27,7 +27,7 @@ executable sbt
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules: Script, Tester
+    other-modules: Script
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
