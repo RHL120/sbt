@@ -25,6 +25,7 @@ argumentsP =
 condtionP :: Parser Tester.Condition
 condtionP = do
   cc <- Tester.condCons
+  Parsec.spaces
   args <- argumentsP
   case cc args of
     Left e -> fail ("error: " ++ e)
@@ -32,12 +33,12 @@ condtionP = do
 
 testBodyP :: Parser [Tester.Condition]
 testBodyP =
-  Parsec.char '{' *> Parsec.spaces *> Parsec.spaces *>
-  Parsec.sepBy
-    condtionP
-    (some (Parsec.oneOf " ") *> Parsec.string "and" <* some (Parsec.oneOf " ")) <*
-  Parsec.spaces <*
-  Parsec.char '}'
+  Parsec.between
+    (Parsec.char '{' <* Parsec.spaces)
+    (Parsec.spaces *> Parsec.char '}')
+    (Parsec.sepBy
+       condtionP
+       (Parsec.spaces *> Parsec.string "and" <* Parsec.spaces))
 
 testP :: Parser Tester.Test
 testP = do
