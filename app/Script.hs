@@ -11,7 +11,6 @@ import Control.Applicative
 import Control.Monad (fail)
 import Data.Char (isDigit)
 import Data.List (isInfixOf, isPrefixOf, isSuffixOf)
-import qualified Data.Map as Map
 import GHC.IO.Handle (hGetContents)
 import GHC.IO.Handle.Internals (withAllHandles__)
 import System.Process

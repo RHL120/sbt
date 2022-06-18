@@ -31,7 +31,7 @@ executable sbt
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.14.3.0, containers, process, parsec
+    build-depends:    base, process, parsec
     hs-source-dirs:   app
     default-language: Haskell2010
 Test-Suite test
@@ -39,4 +39,4 @@ Test-Suite test
     other-modules: Script
     main-is: Test.hs
     hs-source-dirs: test, app
-    build-depends: base, hspec, containers, process, parsec
+    build-depends: base, hspec, process, parsec
