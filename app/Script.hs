@@ -58,7 +58,7 @@ condCons :: Parser ConditionConstructor
 condCons =
   Parsec.choice $
   map
-    (\(f, n) -> f <$ Parsec.string n)
+    (\(f, n) -> f <$ Parsec.try (Parsec.string n))
     [ ( \case
           [x] -> Right (isInfixOf x)
           _ -> Left $ printf "Usage: contains(<value to be contained>)"
