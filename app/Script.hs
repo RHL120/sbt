@@ -3,6 +3,8 @@
 module Script
   ( parseScript
   , runScript
+  , Condition
+  , condtionP
   ) where
 
 import Control.Applicative
@@ -69,7 +71,7 @@ condCons =
           [x] ->
             if not $ all isDigit x
               then Left "expected length must be an int"
-              else Right (== read x)
+              else Right (\l -> length l == length x)
           _ -> Left "Usage: have_len(<expected length>)"
       , "have_len")
     , ( \case
