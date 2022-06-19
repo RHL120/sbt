@@ -5,6 +5,7 @@ module Script
   , runScript
   , Condition
   , condtionP
+  , scriptFailed
   ) where
 
 import Control.Applicative
@@ -43,6 +44,8 @@ data TestResult =
     }
 
 type Script = [Test]
+
+type ScriptResult = [TestResult]
 
 instance Show TestResult where
   show (TestResult (Test n _ _) output True) = printf "Test '%s' passed" n
@@ -104,8 +107,11 @@ runTest t@(Test _ cmd conds) = do
   output <- hGetContents out
   return (TestResult t output (all (\f -> f output) conds))
 
-runScript :: Script -> IO [TestResult]
+runScript :: Script -> IO ScriptResult
 runScript = traverse runTest
+
+scriptFailed :: ScriptResult -> Bool
+scriptFailed = any (\(TestResult _ _ res) -> not res)
 
 stringLiteralP :: Parser String
 stringLiteralP =

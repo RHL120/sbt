@@ -1,8 +1,8 @@
 module Main where
 
-import Script (parseScript, runScript)
+import Script (parseScript, runScript, scriptFailed)
 import System.Environment (getArgs, getProgName)
-import System.Exit (exitFailure)
+import System.Exit (exitFailure, exitSuccess)
 import System.IO
 import Text.Printf (printf)
 
@@ -25,4 +25,8 @@ main = do
     Left e -> putStrLn ("Failed to parse script error " ++ show e)
     Right scr -> do
       res <- runScript scr
-      () <$ traverse print res
+      traverse print res
+      if scriptFailed res
+        then exitFailure
+        else exitSuccess
+      return ()
